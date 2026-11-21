@@ -21,4 +21,13 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "22"
-      - run: make check
+      - name: Install rclone for loopback S3 integration tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends rclone
+          test -x /usr/bin/rclone
+          rclone version
+      - name: Run checks
+        env:
+          ONIONSURGE_TEST_RCLONE: /usr/bin/rclone
+        run: make check
