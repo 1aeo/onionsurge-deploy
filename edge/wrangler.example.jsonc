@@ -1,0 +1,36 @@
+{
+  // PREPARED EXAMPLE ONLY. No routes, DNS, buckets or repository were created.
+  "name": "onionsurge",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-18",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    // The trailing * also matches the query string on bare /onionsurge. The
+    // Worker checks the exact path boundary and passes lookalikes to origin.
+    { "pattern": "example.com/onionsurge*", "zone_name": "example.com" },
+    { "pattern": "onionsurge.example.com/*", "zone_name": "example.com" }
+  ],
+  "assets": {
+    // Only public website output. Never point this at site-design/ or operations.
+    "directory": "../build/public",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "vars": {
+    // Public origin only; no access key, token or private endpoint belongs here.
+    // Example: https://onionsurge-data.nyc3.digitaloceanspaces.com
+    "PUBLIC_DATA_ORIGIN": "",
+    // Required for mutable data routes. Set a fresh unique identifier before
+    // the first production deployment and every rollback/invalidation rollout.
+    // Never reuse a prior value; complete the Worker rollout before switching
+    // to an incompatible frontend. Empty intentionally fails closed.
+    "ROOT_CACHE_GENERATION": ""
+    // Optional R2 binding uses the same project prefix as the publisher:
+    // , "R2_PREFIX": "onionsurge"
+  }
+  // Optional R2 mirror, after creating/reviewing a bucket in the deployment phase:
+  // , "r2_buckets": [{ "binding": "ONIONSURGE_DATA", "bucket_name": "onionsurge-data" }]
+}

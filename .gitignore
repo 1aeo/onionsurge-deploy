@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+dist/
+.cache/
+.env
+.env.*
+!.env.example
+config.env
+config.env.*
+!config.env.example
+.private/
+.wrangler/
+# Private host settings and generated releases never belong in source control.
+build/
+*.local.json
+*.token
+*.key
+*.pem
+*.pyc

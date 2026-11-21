@@ -1,0 +1,15 @@
+{
+  "name": "onionsurge-deploy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pinned Cloudflare publishing toolchain for OnionSurge",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "node": "24.21.0",
+    "wrangler": "4.158.0"
+  },
+  "scripts": {
+    "check:worker": "node_modules/node/bin/node --check edge/worker.mjs",
+    "test:worker": "node_modules/node/bin/node --test tests/*.mjs"
+  }
+}
