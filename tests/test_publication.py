@@ -1085,6 +1085,48 @@ class PublicationTests(unittest.TestCase):
             publish.main(['--config', str(config), '--build-dir', str(self.build), '--application-commit', 'a' * 40,
                           '--deployment-commit', 'b' * 40, '--prepare-only'])
 
+    def test_dos_thresholds_allowed_and_private_or_unknown_fields_rejected(self):
+        build_dir = self.directory / 'build-dos'
+        data = fixture(build_dir)
+        data['dos_thresholds'] = {
+            'as_of': END,
+            'reported_relays': 240,
+            'settings': [
+                {
+                    'family_id': 'transport',
+                    'key': 'dosconnectionenabled',
+                    'option': 'DoSConnectionEnabled',
+                    'relays': 240,
+                    'suppressed_relays': 8,
+                    'unit': 'flag',
+                    'values': [
+                        {'relays': 200, 'source': 'consensus', 'value': '1'},
+                        {'relays': 32, 'source': 'torrc', 'value': '0'},
+                    ],
+                },
+            ],
+        }
+        (build_dir / 'data.json').write_bytes(pub.json_bytes(data))
+        rewrite_build(build_dir)
+        objects = {
+            path.relative_to(build_dir).as_posix(): path.read_bytes()
+            for path in build_dir.rglob('*')
+            if path.is_file() and pub.object_name(path.relative_to(build_dir).as_posix())
+        }
+        validated = pub.validate_data_objects(objects)
+        self.assertEqual(validated['dos_thresholds']['reported_relays'], 240)
+
+        unknown = dict(data, unknown_extra_field=1)
+        objects['data.json'] = pub.json_bytes(unknown)
+        with self.assertRaisesRegex(pub.PublicationError, 'invalid_data_fields'):
+            pub.validate_data_objects(objects)
+
+        leaked = json.loads(json.dumps(data))
+        leaked['dos_thresholds']['settings'][0]['instance'] = 'relay-01:9100'
+        objects['data.json'] = pub.json_bytes(leaked)
+        with self.assertRaisesRegex(pub.PublicationError, 'private_metadata'):
+            pub.validate_data_objects(objects)
+
 
 class TransportTests(unittest.TestCase):
     def test_stdin_upload_scoped_keys_private_child_env_and_explicit_cache_metadata(self):

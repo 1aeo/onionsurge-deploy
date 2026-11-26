@@ -27,7 +27,7 @@ EXPORT_SUFFIX_RE = re.compile(rf'(?!.*(?:^|-){SUB_24H_SUFFIX}\Z)[a-z0-9]+(?:-[a-
 REFERENCE = re.compile(r'reference/reference-\d{4}-\d{2}-\d{2}-[a-f0-9]{12}\.json\Z')
 CSV = re.compile(rf'exports/(?!.*-{SUB_24H_SUFFIX}\.csv\Z)[a-z][a-z0-9_-]{{0,95}}-[a-z0-9]+(?:-[a-z0-9]+){{0,7}}\.csv\Z')
 FRONTEND = set(LIVE_FRONTEND) | {'data.js', 'catalogue.json'}
-DATA_FIELDS = set('charts custom defense dircache_cohort end expected_samples families flags fleet generated_at history_methods input_provenance input_schema_version minimum_samples product provenance reference_cutoff reference_document reference_id reference_sha256 reference_window schema_version snapshot_flags sources start time_ranges versions window_seconds'.split())
+DATA_FIELDS = set('charts custom defense dircache_cohort dos_thresholds end expected_samples families flags fleet generated_at history_methods input_provenance input_schema_version minimum_samples product provenance reference_cutoff reference_document reference_id reference_sha256 reference_window schema_version snapshot_flags sources start time_ranges versions window_seconds'.split())
 
 
 class PublicationError(ValueError):
