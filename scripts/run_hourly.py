@@ -387,7 +387,9 @@ def _run_locked(config, application, state, logs, end, deploy_dir, source_config
                 prev_desc, prev_manifest = _read_published_manifest(config, state)
                 prev_end = None
                 if prev_manifest is not None:
-                    if prev_manifest['data_schema_version'] == 7 and prev_manifest['observation_end'] == target_end:
+                    if (prev_manifest['data_schema_version'] == 7
+                            and prev_manifest['observation_end'] == target_end
+                            and prev_manifest.get('application_commit') == commits['application_commit']):
                         receipt.update(status='up_to_date', finished_at=int(time.time()),
                                        release_id=prev_desc['id'], observation_end=target_end)
                         atomic_private(state / 'last-run.json', json_bytes(receipt))

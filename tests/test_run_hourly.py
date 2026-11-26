@@ -179,7 +179,7 @@ class RunnerTests(unittest.TestCase):
         second_input = Path(self.collect_calls[1][0][self.collect_calls[1][0].index('--output') + 1])
         self.assertNotEqual(first, second_input.parent)
 
-    def published_at_midnight(self, schema=7, observation_end=1794960000, include_24h=True):
+    def published_at_midnight(self, schema=7, observation_end=1794960000, include_24h=True, application_commit='a' * 40):
         hourly.private_directory(self.state)
         objects = {'data.json': {'sha256': 'd' * 64, 'bytes': 10}}
         if include_24h:
@@ -190,7 +190,7 @@ class RunnerTests(unittest.TestCase):
             'data_schema_version': schema,
             'observation_end': observation_end,
             'generated_at': observation_end + 100,
-            'application_commit': 'a' * 40,
+            'application_commit': application_commit,
             'deployment_commit': 'b' * 40,
             'query_contract_sha256': 'c' * 64,
             'objects': objects,
@@ -224,6 +224,24 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(result_daily_v7, {'status': 'up_to_date', 'release_id': RELEASE, 'observation_end': non_midnight_hour})
         self.assertEqual(self.plan_calls, [])
         self.assertEqual(self.collect_calls, [])
+
+    def test_same_utc_hour_with_new_application_commit_republishes(self):
+        self.pipeline()
+        non_midnight_hour = 1794970800
+        self.collect_response = SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({'snapshot_end': non_midnight_hour, 'charts': 15, 'series': 46, 'source_requests': 61,
+                               'cache_committed': True, 'checkpoint_updated': True}) + '\n',
+            stderr='',
+        )
+        self.published_at_midnight(schema=7, observation_end=non_midnight_hour, application_commit='9' * 40)
+        result = hourly.run(self.config, non_midnight_hour, self.deploy)
+        self.assertEqual(result, {'status': 'published', 'release_id': RELEASE})
+        self.assertEqual(len(self.plan_calls), 1)
+        self.assertEqual(len(self.collect_calls), 1)
+        plan_cmd = self.plan_calls[0][0]
+        self.assertEqual(plan_cmd[plan_cmd.index('--previous-end') + 1], str(non_midnight_hour))
+        self.assertEqual(hourly.health(self.config)['last_run_status'], 'published')
 
     def test_previous_v6_midnight_release_does_not_skip_schema_migration(self):
         self.pipeline()
